@@ -42,8 +42,7 @@ func convertMaskToBinaryList(mask []int) []int {
 	return maskList
 }
 
-func handleMulticast(ipList []int) bool {
-	class := checkClass(ipList)
+func handleMulticast(class int) bool {
 	if class == 3 { // Class D
 		return true
 	} else if class > 3 { // Class E
@@ -88,7 +87,7 @@ func convertIPToBinary(ip []int) int {
 
 }
 
-func validateMask(maskAsBinaryList []int) int {
+func validateMask(maskAsBinaryList []int) {
 	if maskAsBinaryList[0] == 0 {
 		invalidInput(1)
 	}
@@ -97,26 +96,41 @@ func validateMask(maskAsBinaryList []int) int {
 			invalidInput(1)
 		}
 	}
+}
+
+func getMaskClass(maskAsBinaryList []int) int {
+	/* Handle Special Cases and identify class boundary
+	    Return 0 for class A valid
+		Return 1 for class B valid
+		Return 2 for class C valid
+		Return 3 for /4 - /7 (can be valid for multicast)
+		Return 4 for /1 - /3 (always supernet)
+		Return 5 for /31
+	*/
+
 	x := 1
 	for i := 1; i < 32; i++ {
 		if maskAsBinaryList[i] == 1 {
 			x++
 		}
 	}
-	/* Handle Special Cases
-	   Return 1 for /31
-	   Return 2 for /1 - /7 (supernets)
-	   Return 0 for normal range */
-	if x < 8 {
-		return 2
+
+	if x > 32 {
+		invalidInput(1)
 	} else if x == 32 {
 		invalidInput(4)
-	} else if x > 32 {
-		invalidInput(1)
 	} else if x == 31 {
+		return 5
+	} else if (x >= 24) && (x <= 30) {
+		return 2
+	} else if (x >= 16) && (x <= 23) {
 		return 1
+	} else if (x >= 8) && (x <= 15) {
+		return 0
+	} else if (x >= 4) && (x <= 7) {
+		return 3
 	}
-	return 0
+	return 4
 }
 
 func invalidInput(errno int) {
@@ -243,8 +257,8 @@ func convertOctetListToDec(octetList []int) int {
 	return int(octetAsDec)
 }
 
-func getRange(slash31 bool, subnetDD string, broadcastDD string) (string, string) {
-	if slash31 == true {
+func getRange(subnetDD string, broadcastDD string, slash31 bool, multicast bool, supernet bool) (string, string) {
+	if slash31 || multicast || supernet {
 		return subnetDD, broadcastDD
 	}
 	firstIPDD := getFirstIP(subnetDD)
@@ -353,14 +367,14 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 	fmt.Printf("╚%s╝\n", padO)
 }
 
-func checkClass(ip []int) int {
+func checkClass(ipAsBinaryList []int) int {
 	/* Return 0 for class A
 	   Return 1 for class B
 	   Return 2 for class C
 	   Return 3 for multicast
 	   Return 4 for invalid */
 	for i := 0; i < 4; i++ {
-		if ip[i] == 0 {
+		if ipAsBinaryList[i] == 0 {
 			return i
 		}
 	}
@@ -406,27 +420,43 @@ func getIPAsBinaryList(ipAddress string) []int {
 	return ipAsBinaryList
 }
 
-func handleSpecialMasks(maskType int) (bool, bool) {
-	switch {
-	case maskType == 1: // /31 Mask
-		return true, false
-	case maskType == 2: // /1 - /7 Mask
-		return false, true
+func handleSlash31(maskClass int) bool {
+	// Return true for /31 mask
+	if maskClass == 5 {
+		return true
 	}
-	return false, false // No special cases
+	return false
+}
+
+func determineSupernet(ipClass int, maskClass int) bool {
+	// Returns true for supernet
+
+	if (ipClass == 3) && (maskClass < 4) {
+		return false // Multicast range
+	} else if maskClass == 5 {
+		return false // /31 Range
+	} else if maskClass >= 3 {
+		return true // Always supernet if not multicast
+	} else if ipClass > maskClass {
+		return true // Supernet if true
+	}
+	return false
 }
 
 func subnetCalc(ipAddress string, maskAsBinaryList []int) (string, string, string, string, string, bool, bool) {
-	maskType := validateMask(maskAsBinaryList)
+	validateMask(maskAsBinaryList)
 	ipAsBinaryList := getIPAsBinaryList(ipAddress)
-	multicast := handleMulticast(ipAsBinaryList)
-	slash31, supernet := handleSpecialMasks(maskType)
+	ipClass := checkClass(ipAsBinaryList)
+	maskClass := getMaskClass(maskAsBinaryList)
+	multicast := handleMulticast(ipClass)
+	slash31 := handleSlash31(maskClass)
+	supernet := determineSupernet(ipClass, maskClass)
 	subnetAsBinaryList := getSubnet(ipAsBinaryList, maskAsBinaryList)
 	broadcastAsBinaryList := getBroadcast(subnetAsBinaryList, maskAsBinaryList)
 	subnetDD := convertBinaryListToDD(subnetAsBinaryList)
 	broadcastDD := convertBinaryListToDD(broadcastAsBinaryList)
 	maskDD := convertBinaryListToDD(maskAsBinaryList)
-	firstIP, lastIP := getRange(slash31, subnetDD, broadcastDD)
+	firstIP, lastIP := getRange(subnetDD, broadcastDD, multicast, slash31, supernet)
 	return maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast
 }
 
