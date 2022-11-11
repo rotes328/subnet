@@ -1,9 +1,16 @@
 # CLI Subnet Calculator
 by Mike Rotella 2022
 
-Tool to subnets in CLI
+CLI tool to subnets in CLI written in Go.
 
-Examples:
+To build:
+
+```
+$go build -o subnet main.go
+$cp subnet /usr/local/bin
+```
+
+##Examples:
 
 ```
 $subnet 10.10.10.10/29
