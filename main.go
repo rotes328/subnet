@@ -293,7 +293,7 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 	deliminator := "-"
 	x := 29 + len(firstIP) + len(lastIP)
 	padd := strings.Repeat(deliminator, x)
-	y := x - 18 - len(ipAddress) - len(maskDD)
+	y := x - 19 - len(ipAddress) - len(maskDD)
 	pad1 := strings.Repeat(" ", y)
 
 	if supernet {
@@ -302,9 +302,9 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 		fmt.Println(y)
 		padC := strings.Repeat(" ", y)
 		fmt.Printf("|%s|\n", padd)
-		fmt.Printf("|For IP %s and mask %s:%s|\n", ipAddress, maskDD, pad1)
+		fmt.Printf("| For IP %s and mask %s:%s|\n", ipAddress, maskDD, pad1)
 		fmt.Printf("|%s|\n", padd)
-		fmt.Printf("|CIDR Range:\t\t%s - %s%s|\n", firstIP, lastIP, padC)
+		fmt.Printf("| CIDR Range:\t\t%s - %s%s|\n", firstIP, lastIP, padC)
 		fmt.Printf("|%s|\n", padd)
 		return
 	}
@@ -317,11 +317,11 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 	pad4 := strings.Repeat(" ", y)
 
 	fmt.Printf("|%s|\n", padd)
-	fmt.Printf("|For IP %s and mask %s:%s|\n", ipAddress, maskDD, pad1)
+	fmt.Printf("| For IP %s and mask %s:%s|\n", ipAddress, maskDD, pad1)
 	fmt.Printf("|%s|\n", padd)
-	fmt.Printf("|Network Address:\t%s%s|\n", subnetDD, pad2)
-	fmt.Printf("|Broadcast Address:\t%s%s|\n", broadcastDD, pad3)
-	fmt.Printf("|Range:\t\t\t%s - %s%s|\n", firstIP, lastIP, pad4)
+	fmt.Printf("| Network Address:\t%s%s|\n", subnetDD, pad2)
+	fmt.Printf("| Broadcast Address:\t%s%s|\n", broadcastDD, pad3)
+	fmt.Printf("| Range:\t\t%s - %s%s|\n", firstIP, lastIP, pad4)
 	fmt.Printf("|%s|\n", padd)
 }
 
