@@ -106,6 +106,7 @@ func getMaskClass(maskAsBinaryList []int) int {
 		Return 3 for /4 - /7 (can be valid for multicast)
 		Return 4 for /1 - /3 (always supernet)
 		Return 5 for /31
+		Return 6 for /32
 	*/
 
 	x := 1
@@ -118,7 +119,8 @@ func getMaskClass(maskAsBinaryList []int) int {
 	if x > 32 {
 		invalidInput(1)
 	} else if x == 32 {
-		invalidInput(4)
+		fmt.Println("/32")
+		return 6
 	} else if x == 31 {
 		return 5
 	} else if (x >= 24) && (x <= 30) {
@@ -173,9 +175,7 @@ func checkMask(bitmask string) int {
 	if err != nil {
 		invalidInput(1)
 	}
-	if mask == 32 {
-		invalidInput(4)
-	} else if mask > 32 {
+	if mask > 32 {
 		invalidInput(1)
 	}
 	return mask
@@ -422,10 +422,7 @@ func getIPAsBinaryList(ipAddress string) []int {
 
 func handleSlash31(maskClass int) bool {
 	// Return true for /31 mask
-	if maskClass == 5 {
-		return true
-	}
-	return false
+	return maskClass == 5
 }
 
 func determineSupernet(ipClass int, maskClass int) bool {
@@ -443,11 +440,18 @@ func determineSupernet(ipClass int, maskClass int) bool {
 	return false
 }
 
-func subnetCalc(ipAddress string, maskAsBinaryList []int) (string, string, string, string, string, bool, bool) {
+func hostOutput(ipAddress string) {
+	padO := strings.Repeat("═", len(ipAddress))
+	fmt.Printf("╔═════════════%s════╗\n", padO)
+	fmt.Printf("║ IP Address: %s/32 ║\n", ipAddress)
+	fmt.Printf("╚═════════════%s════╝\n", padO)
+	os.Exit(0)
+}
+
+func subnetCalc(ipAddress string, maskAsBinaryList []int, maskClass int) (string, string, string, string, string, bool, bool) {
 	validateMask(maskAsBinaryList)
 	ipAsBinaryList := getIPAsBinaryList(ipAddress)
 	ipClass := checkClass(ipAsBinaryList)
-	maskClass := getMaskClass(maskAsBinaryList)
 	multicast := handleMulticast(ipClass)
 	slash31 := handleSlash31(maskClass)
 	supernet := determineSupernet(ipClass, maskClass)
@@ -472,8 +476,14 @@ func main() {
 	// Validate IP Address
 	checkIP(ipAddress)
 
+	// Handle /32
+	maskClass := getMaskClass(maskAsBinaryList)
+	if maskClass == 6 {
+		hostOutput(ipAddress)
+	}
+
 	// Do bitmath
-	maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast := subnetCalc(ipAddress, maskAsBinaryList)
+	maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast := subnetCalc(ipAddress, maskAsBinaryList, maskClass)
 
 	// Render output
 	output(ipAddress, maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast)
