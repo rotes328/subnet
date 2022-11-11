@@ -42,6 +42,16 @@ func convertMaskToBinaryList(mask []int) []int {
 	return maskList
 }
 
+func handleMulticast(ipList []int) bool {
+	class := checkClass(ipList)
+	if class == 3 { // Class D
+		return true
+	} else if class > 3 { // Class E
+		invalidInput(2)
+	}
+	return false
+}
+
 func convertIPToBinaryList(ip []int) []int {
 
 	octet1Bin := convertOctetToBinary(uint64(ip[0]))
@@ -123,6 +133,8 @@ func invalidInput(errno int) {
 		fmt.Println("Host address.")
 	case errno == 5:
 		fmt.Println("Please include IP and mask, --help for help.")
+	case errno == 6:
+		fmt.Println("Multicast IP, not supported.")
 	default:
 		fmt.Println("Please supply an argument, --help for help.")
 	}
@@ -291,7 +303,7 @@ func convertDDtoInt(ip []string) []int {
 	return byteList
 }
 
-func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string, firstIP string, lastIP string, supernet bool) {
+func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string, firstIP string, lastIP string, supernet bool, multicast bool) {
 	// Pad deliminator
 	outsideDeliminator := "═"
 	deliminator := "─"
@@ -304,12 +316,23 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 	if supernet {
 
 		y = x - 26 - len(firstIP) - len(lastIP)
-		fmt.Println(y)
 		padC := strings.Repeat(" ", y)
 		fmt.Printf("╔%s╗\n", padO)
 		fmt.Printf("║ For IP %s and mask %s:%s║\n", ipAddress, maskDD, pad1)
 		fmt.Printf("╟%s╢\n", padD)
 		fmt.Printf("║ CIDR Range:\t\t%s - %s%s║\n", firstIP, lastIP, padC)
+		fmt.Printf("╚%s╝\n", padO)
+		return
+	}
+
+	if multicast {
+
+		y = x - 26 - len(firstIP) - len(lastIP)
+		padC := strings.Repeat(" ", y)
+		fmt.Printf("╔%s╗\n", padO)
+		fmt.Printf("║ For IP %s and mask %s:%s║\n", ipAddress, maskDD, pad1)
+		fmt.Printf("╟%s╢\n", padD)
+		fmt.Printf("║ Multicast Range:\t%s - %s%s║\n", firstIP, lastIP, padC)
 		fmt.Printf("╚%s╝\n", padO)
 		return
 	}
@@ -328,6 +351,20 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 	fmt.Printf("║ Broadcast Address:\t%s%s║\n", broadcastDD, pad3)
 	fmt.Printf("║ Range:\t\t%s - %s%s║\n", firstIP, lastIP, pad4)
 	fmt.Printf("╚%s╝\n", padO)
+}
+
+func checkClass(ip []int) int {
+	/* Return 0 for class A
+	   Return 1 for class B
+	   Return 2 for class C
+	   Return 3 for multicast
+	   Return 4 for invalid */
+	for i := 0; i < 4; i++ {
+		if ip[i] == 0 {
+			return i
+		}
+	}
+	return 4
 }
 
 func handleargs(args []string) (string, []int) {
@@ -379,17 +416,18 @@ func handleSpecialMasks(maskType int) (bool, bool) {
 	return false, false // No special cases
 }
 
-func subnetCalc(ipAddress string, maskAsBinaryList []int) (string, string, string, string, string, bool) {
+func subnetCalc(ipAddress string, maskAsBinaryList []int) (string, string, string, string, string, bool, bool) {
 	maskType := validateMask(maskAsBinaryList)
-	slash31, supernet := handleSpecialMasks(maskType)
 	ipAsBinaryList := getIPAsBinaryList(ipAddress)
+	multicast := handleMulticast(ipAsBinaryList)
+	slash31, supernet := handleSpecialMasks(maskType)
 	subnetAsBinaryList := getSubnet(ipAsBinaryList, maskAsBinaryList)
 	broadcastAsBinaryList := getBroadcast(subnetAsBinaryList, maskAsBinaryList)
 	subnetDD := convertBinaryListToDD(subnetAsBinaryList)
 	broadcastDD := convertBinaryListToDD(broadcastAsBinaryList)
 	maskDD := convertBinaryListToDD(maskAsBinaryList)
 	firstIP, lastIP := getRange(slash31, subnetDD, broadcastDD)
-	return maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet
+	return maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast
 }
 
 func main() {
@@ -405,9 +443,9 @@ func main() {
 	checkIP(ipAddress)
 
 	// Do bitmath
-	maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet := subnetCalc(ipAddress, maskAsBinaryList)
+	maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast := subnetCalc(ipAddress, maskAsBinaryList)
 
 	// Render output
-	output(ipAddress, maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet)
+	output(ipAddress, maskDD, subnetDD, broadcastDD, firstIP, lastIP, supernet, multicast)
 
 }
