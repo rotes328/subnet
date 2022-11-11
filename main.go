@@ -265,10 +265,13 @@ func convertBinaryListToDD(binaryList []int) string {
 }
 
 func help() {
-	fmt.Println("Subnet Calculator Help")
-	fmt.Println("Supply IP and mask in slash notation or dotted decimal")
-	fmt.Println("Example: $subnet 10.1.1.1/24")
-	fmt.Println("         $subnet 192.168.20.1 255.255.255.0")
+	fmt.Println("|---------------------------------------------------------|")
+	fmt.Println("|                   Subnet Utility Help                   |")
+	fmt.Println("|---------------------------------------------------------|")
+	fmt.Println("| Supply IP and mask in slash notation or dotted decimal. |")
+	fmt.Println("| Example: $subnet 10.1.1.1/24                            |")
+	fmt.Println("|         $subnet 192.168.20.1 255.255.255.0              |")
+	fmt.Println("|---------------------------------------------------------|")
 	os.Exit(0)
 }
 
