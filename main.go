@@ -119,7 +119,6 @@ func getMaskClass(maskAsBinaryList []int) int {
 	if x > 32 {
 		invalidInput(1)
 	} else if x == 32 {
-		fmt.Println("/32")
 		return 6
 	} else if x == 31 {
 		return 5
