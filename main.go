@@ -265,13 +265,13 @@ func convertBinaryListToDD(binaryList []int) string {
 }
 
 func help() {
-	fmt.Println("|---------------------------------------------------------|")
-	fmt.Println("|                   Subnet Utility Help                   |")
-	fmt.Println("|---------------------------------------------------------|")
-	fmt.Println("| Supply IP and mask in slash notation or dotted decimal. |")
-	fmt.Println("| Example: $subnet 10.1.1.1/24                            |")
-	fmt.Println("|         $subnet 192.168.20.1 255.255.255.0              |")
-	fmt.Println("|---------------------------------------------------------|")
+	fmt.Println("╔═════════════════════════════════════════════════════════╗")
+	fmt.Println("║                   Subnet Utility Help                   ║")
+	fmt.Println("╟─────────────────────────────────────────────────────────╢")
+	fmt.Println("║ Supply IP and mask in slash notation or dotted decimal. ║")
+	fmt.Println("║ Example: $subnet 10.1.1.1/24                            ║")
+	fmt.Println("║         $subnet 192.168.20.1 255.255.255.0              ║")
+	fmt.Println("╚═════════════════════════════════════════════════════════╝")
 	os.Exit(0)
 }
 
@@ -293,9 +293,11 @@ func convertDDtoInt(ip []string) []int {
 
 func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string, firstIP string, lastIP string, supernet bool) {
 	// Pad deliminator
-	deliminator := "-"
+	outsideDeliminator := "═"
+	deliminator := "─"
 	x := 29 + len(firstIP) + len(lastIP)
-	padd := strings.Repeat(deliminator, x)
+	padD := strings.Repeat(deliminator, x)
+	padO := strings.Repeat(outsideDeliminator, x)
 	y := x - 19 - len(ipAddress) - len(maskDD)
 	pad1 := strings.Repeat(" ", y)
 
@@ -304,11 +306,11 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 		y = x - 26 - len(firstIP) - len(lastIP)
 		fmt.Println(y)
 		padC := strings.Repeat(" ", y)
-		fmt.Printf("|%s|\n", padd)
-		fmt.Printf("| For IP %s and mask %s:%s|\n", ipAddress, maskDD, pad1)
-		fmt.Printf("|%s|\n", padd)
-		fmt.Printf("| CIDR Range:\t\t%s - %s%s|\n", firstIP, lastIP, padC)
-		fmt.Printf("|%s|\n", padd)
+		fmt.Printf("╔%s╗\n", padO)
+		fmt.Printf("║ For IP %s and mask %s:%s║\n", ipAddress, maskDD, pad1)
+		fmt.Printf("╟%s╢\n", padD)
+		fmt.Printf("║ CIDR Range:\t\t%s - %s%s║\n", firstIP, lastIP, padC)
+		fmt.Printf("╚%s╝\n", padO)
 		return
 	}
 
@@ -319,13 +321,13 @@ func output(ipAddress string, maskDD string, subnetDD string, broadcastDD string
 	y = x - 26 - len(firstIP) - len(lastIP)
 	pad4 := strings.Repeat(" ", y)
 
-	fmt.Printf("|%s|\n", padd)
-	fmt.Printf("| For IP %s and mask %s:%s|\n", ipAddress, maskDD, pad1)
-	fmt.Printf("|%s|\n", padd)
-	fmt.Printf("| Network Address:\t%s%s|\n", subnetDD, pad2)
-	fmt.Printf("| Broadcast Address:\t%s%s|\n", broadcastDD, pad3)
-	fmt.Printf("| Range:\t\t%s - %s%s|\n", firstIP, lastIP, pad4)
-	fmt.Printf("|%s|\n", padd)
+	fmt.Printf("╔%s╗\n", padO)
+	fmt.Printf("║ For IP %s and mask %s:%s║\n", ipAddress, maskDD, pad1)
+	fmt.Printf("╟%s╢\n", padD)
+	fmt.Printf("║ Network Address:\t%s%s║\n", subnetDD, pad2)
+	fmt.Printf("║ Broadcast Address:\t%s%s║\n", broadcastDD, pad3)
+	fmt.Printf("║ Range:\t\t%s - %s%s║\n", firstIP, lastIP, pad4)
+	fmt.Printf("╚%s╝\n", padO)
 }
 
 func handleargs(args []string) (string, []int) {
