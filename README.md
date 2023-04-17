@@ -1,7 +1,7 @@
 # CLI Subnet Calculator
 by Mike Rotella 2022
 
-CLI tool to subnets in CLI written in Go.
+CLI tool for IP address subnetting written in Go.
 
 To build:
 
